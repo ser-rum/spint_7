@@ -1,6 +1,5 @@
 import courier.Courier;
 import courier.CourierClient;
-import io.restassured.response.ValidatableResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,16 +10,11 @@ import static org.hamcrest.Matchers.notNullValue;
 public class LoginCourierTest {
 
     Courier courier;
-    Courier courierWithoutPassword;
-    CourierClient courierClient;
-    String wrongLogin = "nonexistent";
-    String wrongPassword = "courier";
+    CourierClient courierClient = new CourierClient();
 
     @Before
     public void setup() {
-        courier = Courier.getRandomCourier();
-        courierWithoutPassword = Courier.getWithoutPassword();
-        courierClient = new CourierClient();
+        courier = Courier.getCourier();
         courierClient.create(courier);
     }
 
@@ -32,23 +26,50 @@ public class LoginCourierTest {
 
     @Test
     public void courierCanLogin(){
-        ValidatableResponse loginResponse = courierClient.login(courier);
-        loginResponse.statusCode(200)
+        courierClient.login(courier)
+                .statusCode(200)
                 .assertThat().body("id", notNullValue());
     }
 
     @Test
     public void canNotLoginWithWrongLoginAndPassword() {
-        ValidatableResponse loginResponse =
-                courierClient.wrongCredentialsLogin(wrongLogin, wrongPassword);
-        loginResponse.statusCode(404)
+        courierClient.loginWithWrongLoginAndPassword()
+                .statusCode(404)
                 .assertThat().body("message", equalTo("Учетная запись не найдена"));
     }
 
     @Test
+    public void canNotLoginWithWrongLogin() {
+        courierClient.loginWithWrongLogin(courier)
+                .statusCode(404)
+                .assertThat().body("message", equalTo("Учетная запись не найдена"));
+    }
+
+    @Test
+    public void canNotLoginWithWrongPassword() {
+        courierClient.loginWithWrongPassword(courier)
+                .statusCode(404)
+                .assertThat().body("message", equalTo("Учетная запись не найдена"));
+    }
+
+    @Test
+    public void canNotLoginWithoutLogin() {
+        courierClient.login(Courier.getWithoutLogin())
+                .statusCode(400)
+                .assertThat().body("message", equalTo("Недостаточно данных для входа"));
+    }
+
+    @Test
+    public void canNotLoginWithoutPassword() {
+        courierClient.login(Courier.getWithoutPassword())
+                .statusCode(400)
+                .assertThat().body("message", equalTo("Недостаточно данных для входа"));
+    }
+
+    @Test
     public void canNotLoginWithoutAllFields() {
-        ValidatableResponse response = courierClient.login(courierWithoutPassword);
-        response.statusCode(400)
+        courierClient.login(Courier.getWithoutLoginAndPassword())
+                .statusCode(400)
                 .assertThat().body("message", equalTo("Недостаточно данных для входа"));
     }
 }

@@ -10,13 +10,10 @@ import static org.hamcrest.Matchers.equalTo;
 public class CreateCourierTest {
 
     Courier courier;
-    Courier courierWithoutPassword;
     CourierClient courierClient;
 
     @Before
     public void setup() {
-        courier = Courier.getRandomCourier();
-        courierWithoutPassword = Courier.getWithoutPassword();
         courierClient = new CourierClient();
     }
 
@@ -28,6 +25,7 @@ public class CreateCourierTest {
 
     @Test
     public void courierCanBeCreated(){
+        courier = Courier.getCourier();
         ValidatableResponse response = courierClient.create(courier);
         response.statusCode(201)
                 .assertThat().body("ok", equalTo(true));
@@ -35,6 +33,7 @@ public class CreateCourierTest {
 
     @Test
     public void canNotCreateTwoSameCouriers() {
+        courier = Courier.getCourier();
         courierClient.create(courier);
         ValidatableResponse sameCourierResponse = courierClient.create(courier);
         sameCourierResponse.statusCode(409)
@@ -44,7 +43,23 @@ public class CreateCourierTest {
 
     @Test
     public void canNotCreateCourierWithoutAllFields() {
-        ValidatableResponse response = courierClient.create(courierWithoutPassword);
+        ValidatableResponse response = courierClient.create(Courier.getWithoutLoginAndPassword());
+        response.statusCode(400)
+                .assertThat().body("message", equalTo("Недостаточно данных для " +
+                        "создания учетной записи"));
+    }
+
+    @Test
+    public void canNotCreateCourierWithoutLogin() {
+        ValidatableResponse response = courierClient.create(Courier.getWithoutLogin());
+        response.statusCode(400)
+                .assertThat().body("message", equalTo("Недостаточно данных для " +
+                        "создания учетной записи"));
+    }
+
+    @Test
+    public void canNotCreateCourierWithoutPassword() {
+        ValidatableResponse response = courierClient.create(Courier.getWithoutPassword());
         response.statusCode(400)
                 .assertThat().body("message", equalTo("Недостаточно данных для " +
                         "создания учетной записи"));

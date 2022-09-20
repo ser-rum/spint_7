@@ -7,6 +7,9 @@ public class CourierClient extends BaseClient {
 
     private final String ROOT = "/courier";
     private final String LOGIN = ROOT + "/login";
+    private final String wrongLogin = "nonexistent";
+    private final String wrongPassword = "courier";
+
 
     public ValidatableResponse create(Courier courier) {
         return getSpec()
@@ -16,39 +19,44 @@ public class CourierClient extends BaseClient {
                 .then().log().all();
     }
 
-    public ValidatableResponse login(Courier courier) {
+    public ValidatableResponse login (Courier courier) {
         return getSpec()
-                .body(courierCredentials(courier))
+                .body(new CourierCredentials(courier).getCourierCredentials())
                 .when()
                 .post(LOGIN)
                 .then().log().all();
     }
 
-    public ValidatableResponse wrongCredentialsLogin(String login, String password) {
+    public ValidatableResponse loginWithWrongLogin (Courier courier) {
         return getSpec()
-                .body(courierCredentials(login, password))
+                .body(new CourierCredentials(wrongLogin, courier).getCourierCredentials())
+                .when()
+                .post(LOGIN)
+                .then().log().all();
+    }
+
+    public ValidatableResponse loginWithWrongPassword (Courier courier) {
+        return getSpec()
+                .body(new CourierCredentials(courier, wrongPassword).getCourierCredentials())
+                .when()
+                .post(LOGIN)
+                .then().log().all();
+    }
+
+    public ValidatableResponse loginWithWrongLoginAndPassword () {
+        return getSpec()
+                .body(new CourierCredentials(wrongLogin, wrongPassword).getCourierCredentials())
                 .when()
                 .post(LOGIN)
                 .then().log().all();
     }
 
     public void delete(Courier courier) {
-        try {
+        if (courier != null) {
             getSpec()
                     .when()
                     .delete(ROOT + "/:" + courierId(courier).toString());
-        } catch (NullPointerException ignored) {
         }
-    }
-
-    public String courierCredentials(Courier courier) {
-        return "{\"login\": \"" + courier.getLogin() + "\", \"password\": \""
-                + courier.getPassword() + "\"}";
-    }
-
-    public String courierCredentials(String login, String password) {
-        return "{\"login\": \"" + login + "\", \"password\": \""
-                + password + "\"}";
     }
 
     public Integer courierId(Courier courier) {

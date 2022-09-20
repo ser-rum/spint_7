@@ -13,9 +13,17 @@ public class Courier {
         this.firstName = firstName;
     }
 
-    public static Courier getRandomCourier() {
+    public static Courier getCourier() {
         return new Courier(
                 RandomStringUtils.randomAlphanumeric(10),
+                "P@ssw0rd",
+                RandomStringUtils.randomAlphabetic(10)
+        );
+    }
+
+    public static Courier getWithoutLogin() {
+        return new Courier(
+                "",
                 "P@ssw0rd",
                 RandomStringUtils.randomAlphabetic(10)
         );
@@ -24,6 +32,14 @@ public class Courier {
     public static Courier getWithoutPassword() {
         return new Courier(
                 RandomStringUtils.randomAlphanumeric(10),
+                "",
+                RandomStringUtils.randomAlphabetic(10)
+        );
+    }
+
+    public static Courier getWithoutLoginAndPassword() {
+        return new Courier(
+                "",
                 "",
                 RandomStringUtils.randomAlphabetic(10)
         );
